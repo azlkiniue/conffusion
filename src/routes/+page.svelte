@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
+  import * as RadioGroup from "$lib/components/ui/radio-group/index.js";
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Textarea } from '$lib/components/ui/textarea';
@@ -10,6 +11,8 @@
 	function changeTab(tab: string) {
 		activeTab = tab;
 	}
+
+  let contextFirst = 'true';
 
 	let base = '';
 	let added = '';
@@ -55,13 +58,27 @@
 					<Label for="add">New config</Label>
 					<Textarea id="add" class="font-mono" bind:value={added} />
 				</div>
+        <div class="space-y-1">
+          <Label for="mergeOpt">Merge Strategy</Label>
+          <RadioGroup.Root id="mergeOpt" bind:value={contextFirst} >
+            <div class="flex items-center space-x-2">
+              <RadioGroup.Item value="true" id="r1" />
+              <Label for="r1" class="font-normal">Context First</Label>
+            </div>
+            <div class="flex items-center space-x-2">
+              <RadioGroup.Item value="false" id="r2" />
+              <Label for="r2" class="font-normal">Context Last</Label>
+            </div>
+            <RadioGroup.Input name="spacing" />
+          </RadioGroup.Root>
+        </div>
 			</Card.Content>
 			<Card.Footer class="flex justify-between">
 				<Button variant="outline" on:click={() => changeTab('base')}>Previous</Button>
 				<Button
 					on:click={() => {
 						changeTab('merged');
-						merged = merge(base, added);
+						merged = merge(base, added, contextFirst === "true");
 					}}>Next</Button
 				>
 			</Card.Footer>

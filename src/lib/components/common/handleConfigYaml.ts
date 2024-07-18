@@ -25,7 +25,8 @@ function generateNewName(name: string): string {
 
 function handleConfigDuplicate(
 	mergedConfig: KubernetesConfig,
-	addedConfig: KubernetesConfig
+	addedConfig: KubernetesConfig,
+  isContextFirst = true
 ): KubernetesConfig {
 	let isClusterNameExist = false;
 	let isContextNameExist = false;
@@ -46,18 +47,34 @@ function handleConfigDuplicate(
 		let newContextName: string = addedContext.name;
 		let newClusterName: string = addedContext.context.cluster;
 		let newUserName: string = addedContext.context.user;
-		if (isContextNameExist) {
-			newContextName = generateNewName(addedContext.name);
-			console.log(`Context name ${addedContext.name} already exists`);
-		}
-		if (isClusterNameExist) {
-			newClusterName = `${addedContext.context.cluster}-${newContextName}`;
-			console.log(`Cluster name ${addedContext.context.cluster} already exists`);
-		}
-		if (isUserNameExist) {
-			newUserName = `${addedContext.context.user}-${newContextName}`;
-			console.log(`User name ${addedContext.context.user} already exists`);
-		}
+    if (isContextFirst) {
+      if (isContextNameExist) {
+        newContextName = generateNewName(addedContext.name);
+        console.log(`Context name ${addedContext.name} already exists`);
+      }
+      if (isClusterNameExist) {
+        newClusterName = `${addedContext.context.cluster}-${newContextName}`;
+        console.log(`Cluster name ${addedContext.context.cluster} already exists`);
+      }
+      if (isUserNameExist) {
+        newUserName = `${addedContext.context.user}-${newContextName}`;
+        console.log(`User name ${addedContext.context.user} already exists`);
+      }
+    } else {
+      if (isClusterNameExist) {
+        newClusterName = generateNewName(addedContext.context.cluster);
+        console.log(`Cluster name ${addedContext.context.cluster} already exists`);
+      }
+      if (isUserNameExist) {
+        newUserName = generateNewName(addedContext.context.user);
+        console.log(`User name ${addedContext.context.user} already exists`);
+      }
+      if (isContextNameExist) {
+        newContextName = `${newUserName}@${newClusterName}`;
+        console.log(`Context name ${addedContext.name} already exists`);
+      }
+    }
+		
 		if (isClusterNameExist || isUserNameExist || isContextNameExist) {
 			newConfig.clusters.forEach((cluster) => {
 				if (cluster.name === addedContext.context.cluster) {
@@ -82,12 +99,12 @@ function handleConfigDuplicate(
 	return newConfig;
 }
 
-export function merge(base: string, added: string): string {
+export function merge(base: string, added: string, isContextFirst = false): string {
 	const baseConfig = parse(base);
 	const addedConfig = parse(added);
 
 	const mergedConfig = structuredClone(baseConfig);
-	const newConfig = handleConfigDuplicate(baseConfig, addedConfig);
+	const newConfig = handleConfigDuplicate(baseConfig, addedConfig, isContextFirst);
 	mergedConfig.clusters.push(...newConfig.clusters);
 	mergedConfig.contexts.push(...newConfig.contexts);
 	mergedConfig.users.push(...newConfig.users);
