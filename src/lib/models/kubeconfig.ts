@@ -1,5 +1,8 @@
 type ClusterData = {
-  "certificate-authority-data": string;
+  "certificate-authority-data"?: string;
+  "certificate-authority"?: string;
+  "insecure-skip-tls-verify"?: boolean;
+  "tls-server-name"?: string;
   server: string;
 };
 
@@ -11,6 +14,7 @@ type Cluster = {
 type ContextData = {
   cluster: string;
   user: string;
+  namespace?: string;
 };
 
 type Context = {
@@ -19,8 +23,15 @@ type Context = {
 };
 
 type UserData = {
-  "client-certificate-data": string;
-  "client-key-data": string;
+  "auth-provider"?: object;
+  "client-certificate-data"?: string;
+  "client-certificate"?: string;
+  "client-key-data"?: string;
+  "client-key"?: string;
+  exec?: object;
+  token?: string;
+  password?: string;
+  username?: string;
 };
 
 type User = {
@@ -29,11 +40,11 @@ type User = {
 };
 
 export type KubernetesConfig = {
-  apiVersion: string;
+  apiVersion: "v1";
   clusters: Array<Cluster>;
   contexts: Array<Context>;
   "current-context": string;
-  kind: string;
+  kind: "Config";
   preferences: object;
   users: Array<User>;
 };
