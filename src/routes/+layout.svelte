@@ -1,6 +1,5 @@
 <script>
 	import '../app.css';
-	export const prerender = true;
 </script>
 
 <div class="container max-w-5xl mx-auto h-screen">
