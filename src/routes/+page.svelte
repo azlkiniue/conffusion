@@ -7,6 +7,8 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { merge } from '$lib/components/common/handleConfigYaml';
 	import { fly } from 'svelte/transition';
+	import Plus from 'svelte-radix/Plus.svelte'
+	import Minus from 'svelte-radix/Minus.svelte'
 
 	let activeTab = 'base';
 	function changeTab(tab: string) {
@@ -16,11 +18,11 @@
 	let contextFirst = 'true';
 
 	let base = '';
-	let added = '';
+	let added: Array<string> = [''];
 	let merged = '';
 	function reset() {
 		base = '';
-		added = '';
+		added = [''];
 		merged = '';
 		changeTab('base');
 	}
@@ -58,13 +60,27 @@
 					<Card.Header>
 						<Card.Title>Add</Card.Title>
 						<Card.Description>
-							Add your new config here. Click merge button to proceed.
+							Add your new config here. You can add multiple kubeconfigs at once. Click merge button to proceed.
 						</Card.Description>
 					</Card.Header>
 					<Card.Content class="space-y-2">
 						<div class="space-y-1">
-							<Label for="add">New config</Label>
-							<Textarea id="add" class="font-mono" bind:value={added} />
+							<Label for="add">New config(s)</Label>
+							<!-- placeholder to remove label warning -->
+							<input id="add" type="text" hidden />
+							{#each added as addedItem, key}
+								<Textarea name={`config-${key}`} class="font-mono" bind:value={addedItem} />
+							{/each}
+							<div class="flex justify-start gap-1 pt-1">
+								<Button on:click={() => (added = [...added, ''])}>
+									<Plus class="mr-2 h-4 w-4" />
+									Add config
+								</Button>
+								<Button variant="destructive" disabled={added.length === 1} on:click={() => (added = added.slice(0, -1))}>
+									<Minus class="mr-2 h-4 w-4" />
+									Remove config
+								</Button>
+							</div>
 						</div>
 						<div class="space-y-1">
 							<Label for="mergeOpt">Merge Strategy</Label>

@@ -1,5 +1,5 @@
 import YAML from 'yaml';
-import type { KubernetesConfig } from '$lib/models/kubeconfig';
+import type { KubernetesConfig, Cluster, Context, User } from '$lib/models/kubeconfig';
 
 /**
  * Parses a YAML configuration string and returns a KubernetesConfig object.
@@ -34,6 +34,23 @@ function generateNewName(name: string): string {
   }
   const newName = nameParts.join('-');
 
+  return newName;
+}
+
+/**
+ * Recursively checks and generates a new name if the given name already exists in the array.
+ * 
+ * @param arrays - The array to check for name existence.
+ * @param name - The original name.
+ * @returns The new generated name.
+ */
+function recursiveCheckNewName(arrays: Cluster[] | Context[] | User[], name: string): string {
+  let newName = name;
+  const isExist = arrays.some((item) => item.name === newName);
+  if (isExist) {
+    newName = generateNewName(newName);
+    newName = recursiveCheckNewName(arrays, newName);
+  }
   return newName;
 }
 
@@ -73,19 +90,19 @@ function handleConfigDuplicate(
 
     // Check and handle context name existence
     if (isContextFirst && isContextNameExist) {
-      newContextName = generateNewName(newContextName);
+      newContextName = recursiveCheckNewName(mergedConfig.contexts, newContextName);
     }
 
     // Check and handle cluster name existence
     if (isClusterNameExist) {
       if (isContextFirst) newClusterName = `${newClusterName}-${newContextName}`;
-      else newClusterName = generateNewName(newClusterName);
+      else newClusterName = recursiveCheckNewName(mergedConfig.clusters, newClusterName);
     }
 
     // Check and handle user name existence
     if (isUserNameExist) {
       if (isContextFirst) newUserName = `${newUserName}-${newContextName}`;
-      else newUserName = generateNewName(newUserName);
+      else newUserName = recursiveCheckNewName(mergedConfig.users, newUserName);
     }
 
     // Adjust context name for context last scenario
@@ -112,12 +129,13 @@ function handleConfigDuplicate(
 
 /**
  * Merges two YAML configuration strings and returns the merged result.
+ * 
  * @param base - The base YAML configuration string.
  * @param added - The YAML configuration string to be added.
  * @param isContextFirst - Optional. Specifies whether the added configuration should be placed before the base configuration. Default is false.
  * @returns The merged YAML configuration string.
  */
-export function merge(base: string, added: string, isContextFirst = false): string {
+export function mergeItem(base: string, added: string, isContextFirst = false): string {
   const baseConfig = parse(base);
   const addedConfig = parse(added);
 
@@ -128,4 +146,21 @@ export function merge(base: string, added: string, isContextFirst = false): stri
   mergedConfig.users.push(...newConfig.users);
 
   return YAML.stringify(mergedConfig);
+}
+
+/**
+ * Merges multiple YAML configuration strings and returns the merged result.
+ * 
+ * @param base - The base YAML configuration string.
+ * @param added - The array of YAML configuration strings to be added.
+ * @param isContextFirst - Optional. Specifies whether the added configuration should be placed before the base configuration. Default is false.
+ * @returns The merged YAML configuration string.
+ */
+export function merge(base: string, added: string[], isContextFirst = false): string {
+  let mergedConfig = base;
+  added.forEach((config) => {
+    mergedConfig = mergeItem(mergedConfig, config, isContextFirst);
+  });
+
+  return mergedConfig;
 }

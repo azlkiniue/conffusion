@@ -6,7 +6,7 @@ type ClusterData = {
   server: string;
 };
 
-type Cluster = {
+export type Cluster = {
   cluster: ClusterData;
   name: string;
 };
@@ -17,7 +17,7 @@ type ContextData = {
   namespace?: string;
 };
 
-type Context = {
+export type Context = {
   context: ContextData;
   name: string;
 };
@@ -34,7 +34,7 @@ type UserData = {
   username?: string;
 };
 
-type User = {
+export type User = {
   name: string;
   user: UserData;
 };
