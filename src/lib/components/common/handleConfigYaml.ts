@@ -11,19 +11,25 @@ users: []`;
 
 /**
  * Parses a YAML configuration string and returns a KubernetesConfig object.
- * 
+ * If the configuration is invalid or cannot be parsed, a default empty configuration is returned.
  * @param config - The YAML configuration string to parse.
  * @returns The parsed KubernetesConfig object.
  */
 function parse(config: string): KubernetesConfig {
-  const result: KubernetesConfig = YAML.parse(config);
-  const isValidKubeConfig = validateKubeConfig(result);
+  try {
+    const result: KubernetesConfig = YAML.parse(config);
+    const isValidKubeConfig = validateKubeConfig(result);
 
-  if (typeof result !== 'object' || !isValidKubeConfig) {
-    console.warn(`Invalid configuration: '${config}'`);
+    if (typeof result !== 'object' || !isValidKubeConfig) {
+      console.warn(`Invalid configuration: '${config}'`);
+      return YAML.parse(emptyConfig) as KubernetesConfig;
+    }
+    return result;
+  } catch (e) {
+    console.warn(`Error parsing configuration: '${config}'`);
+    console.error(`YAML parse error:\n${(e as Error).message}`);
     return YAML.parse(emptyConfig) as KubernetesConfig;
   }
-  return result;
 }
 
 /**
