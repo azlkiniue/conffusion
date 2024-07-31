@@ -5,10 +5,11 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import { Input } from '$lib/components/ui/input';
 	import { merge } from '$lib/components/common/handleConfigYaml';
 	import { fly } from 'svelte/transition';
-	import Plus from 'svelte-radix/Plus.svelte'
-	import Minus from 'svelte-radix/Minus.svelte'
+	import Plus from 'svelte-radix/Plus.svelte';
+	import Minus from 'svelte-radix/Minus.svelte';
 
 	let activeTab = 'base';
 	function changeTab(tab: string) {
@@ -25,6 +26,18 @@
 		added = [''];
 		merged = '';
 		changeTab('base');
+	}
+
+	// https://stackoverflow.com/a/64113219
+	async function readText(event: Event): Promise<string> {
+		const target = event.target as HTMLInputElement;
+		if (!target.files) return '';
+
+		const file = target.files.item(0);
+		if (!file) return '';
+
+		const result = await file.text();
+		return result;
 	}
 </script>
 
@@ -43,6 +56,7 @@
 						<div class="space-y-1">
 							<Label for="base">Base config</Label>
 							<Textarea id="base" class="font-mono" bind:value={base} />
+							<Input type="file" on:change={(e) => readText(e).then((res) => (base = res))} />
 						</div>
 					</Card.Content>
 					<Card.Footer class="flex justify-end">
@@ -60,7 +74,8 @@
 					<Card.Header>
 						<Card.Title>Add</Card.Title>
 						<Card.Description>
-							Add your new config here. You can add multiple kubeconfigs at once. Click merge button to proceed.
+							Add your new config here. You can add multiple kubeconfigs at once. Click merge button
+							to proceed.
 						</Card.Description>
 					</Card.Header>
 					<Card.Content class="space-y-2">
@@ -70,13 +85,22 @@
 							<input id="add" type="text" hidden />
 							{#each added as addedItem, key}
 								<Textarea name={`config-${key}`} class="font-mono" bind:value={addedItem} />
+								<Input
+									type="file"
+									class="!mb-3"
+									on:change={(e) => readText(e).then((res) => (added[key] = res))}
+								/>
 							{/each}
-							<div class="flex justify-start gap-1 pt-1">
+							<div class="flex justify-start gap-1 pb-1">
 								<Button on:click={() => (added = [...added, ''])}>
 									<Plus class="mr-2 h-4 w-4" />
 									Add config
 								</Button>
-								<Button variant="destructive" disabled={added.length === 1} on:click={() => (added = added.slice(0, -1))}>
+								<Button
+									variant="destructive"
+									disabled={added.length === 1}
+									on:click={() => (added = added.slice(0, -1))}
+								>
 									<Minus class="mr-2 h-4 w-4" />
 									Remove config
 								</Button>
