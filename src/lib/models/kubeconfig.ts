@@ -47,4 +47,33 @@ export type KubernetesConfig = {
   kind: "Config";
   preferences: object;
   users: Array<User>;
+  extensions?: Array<object>;
 };
+
+// TODO: change with zod
+export function validateKubeConfig(kubeconfig: KubernetesConfig): boolean {
+  if (!kubeconfig) {
+    return false;
+  }
+
+  const requiredFields: (keyof KubernetesConfig)[] = [
+    'apiVersion',
+    'kind',
+    'clusters',
+    'contexts',
+    'current-context',
+    'users'
+  ];
+
+  for (const field of requiredFields) {
+    if (kubeconfig[field] === undefined) {
+      return false;
+    }
+  }
+
+  if (kubeconfig.apiVersion !== 'v1' || kubeconfig.kind !== 'Config') {
+    return false;
+  }
+
+  return true;
+}

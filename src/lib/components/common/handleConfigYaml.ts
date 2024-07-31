@@ -1,5 +1,13 @@
 import YAML from 'yaml';
-import type { KubernetesConfig, Cluster, Context, User } from '$lib/models/kubeconfig';
+import { type KubernetesConfig, type Cluster, type Context, type User, validateKubeConfig } from '$lib/models/kubeconfig';
+
+const emptyConfig = `apiVersion: v1
+clusters: []
+contexts: []
+current-context: ""
+kind: Config
+preferences: {}
+users: []`;
 
 /**
  * Parses a YAML configuration string and returns a KubernetesConfig object.
@@ -8,7 +16,14 @@ import type { KubernetesConfig, Cluster, Context, User } from '$lib/models/kubec
  * @returns The parsed KubernetesConfig object.
  */
 function parse(config: string): KubernetesConfig {
-  return YAML.parse(config) as KubernetesConfig;
+  const result: KubernetesConfig = YAML.parse(config);
+  const isValidKubeConfig = validateKubeConfig(result);
+
+  if (typeof result !== 'object' || !isValidKubeConfig) {
+    console.warn(`Invalid configuration: '${config}'`);
+    return YAML.parse(emptyConfig) as KubernetesConfig;
+  }
+  return result;
 }
 
 /**
