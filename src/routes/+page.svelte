@@ -6,10 +6,12 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Input } from '$lib/components/ui/input';
-	import { merge } from '$lib/components/common/handleConfigYaml';
+	import { merge } from '$lib/components/common/handle-config-yaml';
 	import { fly } from 'svelte/transition';
 	import Plus from 'svelte-radix/Plus.svelte';
 	import Minus from 'svelte-radix/Minus.svelte';
+	import EditDialog from '$lib/components/boilerplate-ui/edit-dialog.svelte';
+	import { base, added, merged } from '$lib/stores';
 
 	let activeTab = 'base';
 	function changeTab(tab: string) {
@@ -18,13 +20,10 @@
 
 	let contextFirst = 'true';
 
-	let base = '';
-	let added: Array<string> = [''];
-	let merged = '';
 	function reset() {
-		base = '';
-		added = [''];
-		merged = '';
+		$base = '';
+		$added = [''];
+		$merged = '';
 		changeTab('base');
 	}
 
@@ -55,8 +54,11 @@
 					<Card.Content class="space-y-2">
 						<div class="space-y-1">
 							<Label for="base">Base config</Label>
-							<Textarea id="base" class="font-mono" bind:value={base} />
-							<Input type="file" on:change={(e) => readText(e).then((res) => (base = res))} />
+							<Textarea id="base" class="font-mono" bind:value={$base} />
+							<div class="flex justify-between gap-1">
+								<Input type="file" on:change={(e) => readText(e).then((res) => ($base = res))} />
+								<EditDialog config={$base} typeConfig="base" />
+							</div>
 						</div>
 					</Card.Content>
 					<Card.Footer class="flex justify-end">
@@ -83,23 +85,26 @@
 							<Label for="add">New config(s)</Label>
 							<!-- placeholder to remove label warning -->
 							<input id="add" type="text" hidden />
-							{#each added as addedItem, key}
+							{#each $added as addedItem, key}
 								<Textarea name={`config-${key}`} class="font-mono" bind:value={addedItem} />
-								<Input
-									type="file"
-									class="!mb-3"
-									on:change={(e) => readText(e).then((res) => (added[key] = res))}
-								/>
+								<div class="!mb-3 flex justify-between gap-1">
+									<Input
+										type="file"
+										on:change={(e) => readText(e).then((res) => ($added[key] = res))}
+									/>
+									<EditDialog config={$added[key]} typeConfig={'added-'.concat(key.toString())} />
+								</div>
 							{/each}
 							<div class="flex justify-start gap-1 pb-1">
-								<Button on:click={() => (added = [...added, ''])}>
+								<Button size="sm" on:click={() => ($added = [...$added, ''])}>
 									<Plus class="mr-2 h-4 w-4" />
 									Add config
 								</Button>
 								<Button
+									size="sm"
 									variant="destructive"
-									disabled={added.length === 1}
-									on:click={() => (added = added.slice(0, -1))}
+									disabled={$added.length === 1}
+									on:click={() => ($added = $added.slice(0, -1))}
 								>
 									<Minus class="mr-2 h-4 w-4" />
 									Remove config
@@ -126,9 +131,9 @@
 					<Card.Footer class="flex justify-between">
 						<Button variant="outline" on:click={() => changeTab('base')}>Previous</Button>
 						<Button
-							on:click={(e) => {
+							on:click={() => {
 								changeTab('merged');
-								merged = merge(base, added, contextFirst === 'true');
+								$merged = merge($base, $added, contextFirst === 'true');
 							}}
 						>
 							Merge
@@ -152,7 +157,8 @@
 					<Card.Content class="space-y-2">
 						<div class="space-y-1">
 							<Label for="merged">Result config</Label>
-							<Textarea id="merged" class="font-mono" bind:value={merged} />
+							<Textarea id="merged" class="font-mono" bind:value={$merged} />
+							<EditDialog config={$merged} typeConfig="merged" />
 						</div>
 					</Card.Content>
 					<Card.Footer class="flex justify-between">

@@ -15,7 +15,7 @@ users: []`;
  * @param config - The YAML configuration string to parse.
  * @returns The parsed KubernetesConfig object.
  */
-function parse(config: string): KubernetesConfig {
+export function parse(config: string): KubernetesConfig {
   try {
     const result: KubernetesConfig = YAML.parse(config);
     const isValidKubeConfig = validateKubeConfig(result);
@@ -27,7 +27,7 @@ function parse(config: string): KubernetesConfig {
     return result;
   } catch (e) {
     console.warn(`Error parsing configuration: '${config}'`);
-    console.error(`YAML parse error:\n${(e as Error).message}`);
+    console.warn(`YAML parse error:\n${(e as Error).message}`);
     return YAML.parse(emptyConfig) as KubernetesConfig;
   }
 }
