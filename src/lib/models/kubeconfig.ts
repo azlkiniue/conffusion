@@ -71,9 +71,13 @@ export function validateKubeConfig(kubeconfig: KubernetesConfig): boolean {
     }
   }
 
-  if (kubeconfig.apiVersion !== 'v1' || kubeconfig.kind !== 'Config') {
-    return false;
-  }
+  const isValidKubeconfig: Array<boolean> = [
+    kubeconfig.apiVersion === 'v1',
+    kubeconfig.kind === 'Config',
+    kubeconfig.clusters.length > 0,
+    kubeconfig.contexts.length > 0,
+    kubeconfig.users.length > 0
+  ];
 
-  return true;
+  return isValidKubeconfig.every(condition => condition);
 }
