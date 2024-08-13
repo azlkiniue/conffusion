@@ -2,7 +2,7 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Input } from '$lib/components/ui/input';
@@ -10,6 +10,7 @@
 	import { fly } from 'svelte/transition';
 	import Plus from 'svelte-radix/Plus.svelte';
 	import Minus from 'svelte-radix/Minus.svelte';
+	import Download from 'svelte-radix/Download.svelte';
 	import EditDialog from '$lib/components/boilerplate-ui/edit-dialog.svelte';
 	import { base, added, merged } from '$lib/stores';
 
@@ -158,7 +159,17 @@
 						<div class="space-y-1">
 							<Label for="merged">Result config</Label>
 							<Textarea id="merged" class="font-mono" bind:value={$merged} />
-							<EditDialog config={$merged} typeConfig="merged" />
+							<div class="flex justify-start gap-1">
+								<a
+									href={`data:application/yaml;base64,${btoa($merged)}`}
+									class={buttonVariants({ variant: 'default' })}
+									download="config"
+								>
+									<Download class="mr-2 h-4 w-4" />
+									Download
+								</a>
+								<EditDialog config={$merged} typeConfig="merged" />
+							</div>
 						</div>
 					</Card.Content>
 					<Card.Footer class="flex justify-between">
