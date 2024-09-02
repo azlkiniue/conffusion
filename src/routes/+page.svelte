@@ -12,6 +12,7 @@
 	import Minus from 'svelte-radix/Minus.svelte';
 	import Download from 'svelte-radix/Download.svelte';
 	import EditDialog from '$lib/components/boilerplate-ui/edit-dialog.svelte';
+	import MergeStrategyHelp from '$lib/components/boilerplate-ui/merge-strategy-help.svelte';
 	import { base, added, merged } from '$lib/stores';
 
 	let activeTab = 'base';
@@ -113,7 +114,12 @@
 							</div>
 						</div>
 						<div class="space-y-1">
-							<Label for="mergeOpt">Merge Strategy</Label>
+							<Label for="mergeOpt">
+								<div class="inline-flex justify-center">
+									Merge Strategy
+									<MergeStrategyHelp />
+								</div>
+							</Label>
 							<!-- placeholder to remove label warning -->
 							<input id="mergeOpt" type="text" hidden />
 							<RadioGroup.Root bind:value={contextFirst}>
